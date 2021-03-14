@@ -403,17 +403,17 @@ contract NFTees is Context, ERC165, IERC1155, IERC1155MetadataURI {
         /**
          * @dev See {_setURI}.
          */
-        constructor (string memory uri_) {
-            _setURI(uri_);
-            minter = msg.sender;
-        }
+    constructor (string memory uri_) {
+        _setURI(uri_);
+        minter = msg.sender;
+    }
 
 
-      function create(string memory URI) public {
-          require(msg.sender==minter);
-          _tokenURIs[tokenIndex] = URI;
-          tokenIndex++;
-      }
+    function create(string memory URI) public {
+        require(msg.sender==minter);
+        _tokenURIs[tokenIndex] = URI;
+        tokenIndex++;
+    }
 
     uint one=10**18;
     // Approximate .001x^2+.000 000 000 000 000 000 000 000 0000999x^{8}
@@ -426,20 +426,20 @@ contract NFTees is Context, ERC165, IERC1155, IERC1155MetadataURI {
     function calculatePrice(uint id) public view returns(uint){
             return curve(totalSupplies[id]);
         }
-        function buy(uint id) public payable{
-            totalSupplies[id]+=1;
-            uint price=curve(totalSupplies[id]);
-            require(price==msg.value,"price must be on the curve");
-            _balances[id][msg.sender] += 1;
-            _mint(msg.sender,id,1);
-        }
+    function buy(uint id) public payable{
+        totalSupplies[id]+=1;
+        uint price=curve(totalSupplies[id]);
+        require(price==msg.value,"price must be on the curve");
+        _balances[id][msg.sender] += 1;
+        _mint(msg.sender,id,1);
+    }
 
-        function sell(uint id) public {
-            _balances[id][msg.sender] -= 1;
-            require(_balances[msg.sender]>=1,"seller must hold a token");
-            uint price=curve(totalSupplies[id]);
-            payable(msg.sender).transfer(price);
-            totalSupplies[id]-=1;
-            _burn(msg.sender,id,1);
-        }
+    function sell(uint id) public {
+        _balances[id][msg.sender] -= 1;
+        require(_balances[msg.sender]>=1,"seller must hold a token");
+        uint price=curve(totalSupplies[id]);
+        payable(msg.sender).transfer(price);
+        totalSupplies[id]-=1;
+        _burn(msg.sender,id,1);
+    }
 }
