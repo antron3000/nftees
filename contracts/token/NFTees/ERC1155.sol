@@ -17,7 +17,7 @@ import "../../utils/introspection/ERC165.sol";
  *
  * _Available since v3.1._
  */
-contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
+contract NFTees is Context, ERC165, IERC1155, IERC1155MetadataURI {
     using Address for address;
 
     // Mapping from token ID to account balances
@@ -29,25 +29,9 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     // Used as the URI for all token types by relying on ID substitution, e.g. https://token-cdn-domain/{id}.json
     string private _uri;
 
-    address public minter;
     uint public tokenIndex;
 
     mapping(uint=>string) internal _tokenURIs;
-
-    /**
-     * @dev See {_setURI}.
-     */
-    constructor (string memory uri_) {
-        _setURI(uri_);
-        minter = msg.sender;
-    }
-
-    function create(uint amount,string memory URI) public {
-          require(msg.sender==minter);
-            _mint(msg.sender,tokenIndex,amount,"");
-            _tokenURIs[tokenIndex] = URI;
-            tokenIndex++;
-        }
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -409,4 +393,53 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         return array;
     }
+
+
+    mapping(uint => uint) totalSupplies;
+
+    address public minter;
+
+
+        /**
+         * @dev See {_setURI}.
+         */
+        constructor (string memory uri_) {
+            _setURI(uri_);
+            minter = msg.sender;
+        }
+
+
+      function create(string memory URI) public {
+          require(msg.sender==minter);
+          _tokenURIs[tokenIndex] = URI;
+          tokenIndex++;
+      }
+
+    uint one=10**18;
+    // Approximate .001x^2+.000 000 000 000 000 000 000 000 0000999x^{8}
+    function curve(uint n) public view returns(uint){
+        uint term1=((n*one)/10**4);
+        uint term2=((one*n*n*n*n*n*n*n*n*9999)/10**32);
+        return term1+term2;
+    }
+
+    function calculatePrice(uint id) public view returns(uint){
+            return curve(totalSupplies[id]);
+        }
+        function buy(uint id) public payable{
+            totalSupplies[id]+=1;
+            uint price=curve(totalSupplies[id]);
+            require(price==msg.value,"price must be on the curve");
+            _balances[id][msg.sender] += 1;
+            _mint(msg.sender,id,1);
+        }
+
+        function sell(uint id) public {
+            _balances[id][msg.sender] -= 1;
+            require(_balances[msg.sender]>=1,"seller must hold a token");
+            uint price=curve(totalSupplies[id]);
+            payable(msg.sender).transfer(price);
+            totalSupplies[id]-=1;
+            _burn(msg.sender,id,1);
+        }
 }

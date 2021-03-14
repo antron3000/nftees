@@ -14,7 +14,7 @@ import "../../../security/Pausable.sol";
  *
  * _Available since v3.1._
  */
-abstract contract ERC1155Pausable is NFTees, Pausable {
+abstract contract ERC1155Pausable is ERC1155, Pausable {
     /**
      * @dev See {ERC1155-_beforeTokenTransfer}.
      *
